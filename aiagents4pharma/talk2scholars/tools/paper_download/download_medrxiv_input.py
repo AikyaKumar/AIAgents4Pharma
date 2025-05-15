@@ -4,6 +4,7 @@ Tool for downloading medRxiv paper metadata and retrieving the PDF URL.
 """
 
 import logging
+import xml.etree.ElementTree as ET
 from typing import Annotated, Any
 
 import hydra
@@ -27,6 +28,7 @@ class DownloadMedrxivPaperInput(BaseModel):
     )
     tool_call_id: Annotated[str, InjectedToolCallId]
 
+# Fetching raw metadata from medRxiv API for a given DOI
 def fetch_medrxiv_metadata(doi: str) -> dict:
     """
     Fetch raw metadata JSON from medRxiv API for a given DOI.
@@ -36,11 +38,14 @@ def fetch_medrxiv_metadata(doi: str) -> dict:
     if response.status_code != 200:
         raise RuntimeError(f"Failed to fetch metadata. HTTP {response.status_code}")
 
-    data = response.json()
-    if not data.get("collection"):
+    # Correct:
+    xml_text = response.text
+    root = ET.fromstring(xml_text)
+    if not root.get("collection"):
         raise ValueError(f"No data found for DOI {doi}")
-    return data["collection"][0]  # Return only the first item
+    return root["collection"][0]
 
+# Extracting relevant metadata fields from the raw data
 def extract_metadata(paper: dict, doi: str) -> dict:
     """
     Extract relevant metadata fields from a medRxiv paper entry.
@@ -63,7 +68,7 @@ def extract_metadata(paper: dict, doi: str) -> dict:
         "medrxiv_id": doi
     }
 
-
+# Tool to download medRxiv paper metadata and PDF URL
 @tool(args_schema=DownloadMedrxivPaperInput, parse_docstring=True)
 def download_medrxiv_paper(
     doi: str,
@@ -81,9 +86,8 @@ def download_medrxiv_paper(
         )
         api_url = cfg.tools.download_medrxiv_paper.api_url
         request_timeout = cfg.tools.download_medrxiv_paper.request_timeout
-
-    print(f"API URL: {api_url}")
-    print(f"Request Timeout: {request_timeout}")
+        logger.info("API URL: %s", api_url)
+        logger.info("Request Timeout: %s", request_timeout)
 
 
     raw_data = fetch_medrxiv_metadata(doi)
