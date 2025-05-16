@@ -4,7 +4,6 @@ Tool for downloading medRxiv paper metadata and retrieving the PDF URL.
 """
 
 import logging
-import xml.etree.ElementTree as ET
 from typing import Annotated, Any
 
 import hydra
@@ -31,21 +30,18 @@ class DownloadMedrxivPaperInput(BaseModel):
 # Fetching raw metadata from medRxiv API for a given DOI
 def fetch_medrxiv_metadata(doi: str) -> dict:
     """
-    Fetch raw metadata JSON from medRxiv API for a given DOI.
+    Fetch metadata JSON from medRxiv API for a given DOI.
     """
     api_url = f"https://api.biorxiv.org/details/medrxiv/{doi}"
     response = requests.get(api_url, timeout=10)
     if response.status_code != 200:
         raise RuntimeError(f"Failed to fetch metadata. HTTP {response.status_code}")
 
-    # Correct:
-    xml_text = response.text
-    root = ET.fromstring(xml_text)
-    ns = {"atom": "http://www.w3.org/2005/Atom"}
-    
-    if not root.get("collection"):
-        raise ValueError(f"No data found for DOI {doi}")
-    return root["collection"][0]
+    data = response.json()
+    if not data.get("collection"):
+        raise ValueError(f"No entry found for medRxiv ID {doi}")
+
+    return data["collection"][0]
 
 # Extracting relevant metadata fields from the raw data
 def extract_metadata(paper: dict, doi: str) -> dict:
