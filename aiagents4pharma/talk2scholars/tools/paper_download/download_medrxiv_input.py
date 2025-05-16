@@ -41,6 +41,8 @@ def fetch_medrxiv_metadata(doi: str) -> dict:
     # Correct:
     xml_text = response.text
     root = ET.fromstring(xml_text)
+    ns = {"atom": "http://www.w3.org/2005/Atom"}
+    
     if not root.get("collection"):
         raise ValueError(f"No data found for DOI {doi}")
     return root["collection"][0]
@@ -56,6 +58,8 @@ def extract_metadata(paper: dict, doi: str) -> dict:
     pub_date = paper.get("date", "N/A")
     doi_suffix = paper.get("doi", "").split("10.1101/")[-1]
     pdf_url = f"https://www.medrxiv.org/content/10.1101/{doi_suffix}.full.pdf"
+    if not pdf_url:
+        raise RuntimeError(f"Could not find PDF URL for arXiv ID {doi}")
     return {
         "Title": title,
         "Authors": authors,
