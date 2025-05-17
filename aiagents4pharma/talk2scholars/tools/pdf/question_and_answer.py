@@ -479,12 +479,6 @@ def question_and_answer(
         if isinstance(paper, dict)
     )
 
-    has_medrxiv_papers = any(
-    paper.get("source") == "medrxiv"
-    for paper in article_data.values()
-    if isinstance(paper, dict)
-    )
-
     has_biorxiv_papers = any(
         paper.get("source") == "biorxiv"
         for paper in article_data.values()
@@ -510,7 +504,6 @@ def question_and_answer(
           or has_uploaded_papers
           or has_zotero_papers
           or has_arxiv_papers
-          or has_medrxiv_papers
           or has_biorxiv_papers):
         # Use all available papers if explicitly requested or if we have papers from any source
         selected_paper_ids = list(article_data.keys())
