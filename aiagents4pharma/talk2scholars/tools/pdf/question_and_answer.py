@@ -144,6 +144,7 @@ class Vectorstore:
         self.paper_metadata[paper_id] = paper_metadata
 
         # Load the PDF and split into chunks according to Hydra config
+        print("Loading PDF from URL:", pdf_url)
         loader = PyPDFLoader(pdf_url)
         documents = loader.load()
         logger.info("Loaded %d pages from %s", len(documents), paper_id)
@@ -482,8 +483,13 @@ def question_and_answer(
     paper.get("source") == "medrxiv"
     for paper in article_data.values()
     if isinstance(paper, dict)
-)
+    )
 
+    has_biorxiv_papers = any(
+        paper.get("source") == "biorxiv"
+        for paper in article_data.values()
+        if isinstance(paper, dict)
+    )
 
     # Choose papers to use
     selected_paper_ids = []
@@ -504,7 +510,8 @@ def question_and_answer(
           or has_uploaded_papers
           or has_zotero_papers
           or has_arxiv_papers
-          or has_medrxiv_papers):
+          or has_medrxiv_papers
+          or has_biorxiv_papers):
         # Use all available papers if explicitly requested or if we have papers from any source
         selected_paper_ids = list(article_data.keys())
         logger.info(
