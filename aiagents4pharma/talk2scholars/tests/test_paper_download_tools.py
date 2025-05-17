@@ -86,7 +86,7 @@ class TestDownloadArxivPaper(unittest.TestCase):
             f"Successfully retrieved metadata and PDF URL for arXiv ID {arxiv_id}",
             messages[0].content,
         )
-        
+
 
     @patch(
         "aiagents4pharma.talk2scholars.tools.paper_download.download_arxiv_input.hydra.initialize"

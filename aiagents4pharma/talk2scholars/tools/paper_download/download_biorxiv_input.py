@@ -49,7 +49,7 @@ def fetch_biorxiv_metadata(doi: str) -> dict:
     data = response.json()
     if not data.get("collection"):
         raise ValueError(f"No metadata found for DOI: {doi}")
-    
+
     data = response.json()
     if not data.get("collection"):
         raise ValueError(f"No entry found for bioRxiv ID {doi}")
