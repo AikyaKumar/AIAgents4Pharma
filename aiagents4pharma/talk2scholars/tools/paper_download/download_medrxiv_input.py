@@ -38,8 +38,6 @@ def fetch_medrxiv_metadata(doi: str) -> dict:
     base_url = "https://api.biorxiv.org/details/medrxiv/"
     api_url = f"{base_url}{clean_doi}"
     response = requests.get(api_url, timeout=10)
-    if response.status_code != 200:
-        raise RuntimeError(f"Failed to fetch metadata. HTTP {response.status_code}")
 
     data = response.json()
     if not data.get("collection"):
@@ -58,8 +56,7 @@ def extract_metadata(paper: dict, doi: str) -> dict:
     pub_date = paper.get("date", "N/A")
     doi_suffix = paper.get("doi", "").split("10.1101/")[-1]
     pdf_url = f"https://www.medrxiv.org/content/10.1101/{doi_suffix}.full.pdf"
-    if not pdf_url:
-        raise RuntimeError(f"Could not find PDF URL for arXiv ID {doi}")
+
     return {
         "Title": title,
         "Authors": authors,
