@@ -32,9 +32,9 @@ def fetch_medrxiv_metadata(doi: str) -> dict:
     """
     Fetch metadata JSON from medRxiv API for a given DOI.
     """
-    # Strip any version suffix (e.g., v1) since bioRxiv's API is version-sensitive
+    # Strip any version suffix (e.g., v1) since medRxiv's API is version-sensitive
     clean_doi = doi.split("v")[0]
-
+    
     base_url = "https://api.biorxiv.org/details/medrxiv/"
     api_url = f"{base_url}{clean_doi}"
     response = requests.get(api_url, timeout=10)
