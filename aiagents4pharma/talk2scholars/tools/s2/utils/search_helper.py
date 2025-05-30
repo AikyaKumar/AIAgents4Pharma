@@ -109,8 +109,28 @@ class SearchData:
 
     def _filter_papers(self) -> None:
         """Filter and format papers."""
-        self.filtered_papers = {
-            paper["paperId"]: {
+        # Build filtered papers mapping with unified paper_ids list
+        filtered: Dict[str, Any] = {}
+        for paper in self.papers:
+            if not paper.get("title") or not paper.get("authors"):
+                continue
+            ext = paper.get("externalIds", {}) or {}
+            # Prioritized list of IDs: arXiv, PubMed, PubMedCentral, DOI
+            ids: list[str] = []
+            arxiv = ext.get("ArXiv")
+            if arxiv:
+                ids.append(f"arxiv:{arxiv}")
+            pubmed = ext.get("PubMed")
+            if pubmed:
+                ids.append(f"pubmed:{pubmed}")
+            pmc = ext.get("PubMedCentral")
+            if pmc:
+                ids.append(f"pmc:{pmc}")
+            doi_id = ext.get("DOI")
+            if doi_id:
+                ids.append(f"doi:{doi_id}")
+            # Compose metadata dict
+            metadata = {
                 "semantic_scholar_paper_id": paper["paperId"],
                 "Title": paper.get("title", "N/A"),
                 "Abstract": paper.get("abstract", "N/A"),
@@ -130,8 +150,28 @@ class SearchData:
             for paper in self.papers
             if paper.get("title") and paper.get("authors")
         }
+                "arxiv_id": arxiv or "N/A",
+                "pmc_id": pmc or "N/A",
+                "pm_id": pubmed or "N/A",
+                "doi": doi_id or "N/A",
+                "paper_ids": ids,
+                "source": "semantic_scholar",
+            }
+            filtered[paper["paperId"]] = metadata
+        self.filtered_papers = filtered
 
         logger.info("Filtered %d papers", len(self.filtered_papers))
+
+    def _get_snippet(self, abstract: str) -> str:
+        """Extract the first one or two sentences from an abstract."""
+        if not abstract or abstract == "N/A":
+            return ""
+        sentences = abstract.split(". ")
+        snippet_sentences = sentences[:2]
+        snippet = ". ".join(snippet_sentences)
+        if not snippet.endswith("."):
+            snippet += "."
+        return snippet
 
     def _create_content(self) -> None:
         """Create the content message for the response."""
@@ -145,6 +185,16 @@ class SearchData:
                 for i, paper in enumerate(top_papers)
             ]
         )
+        entries = []
+        for i, paper in enumerate(top_papers):
+            title = paper.get("Title", "N/A")
+            year = paper.get("Year", "N/A")
+            snippet = self._get_snippet(paper.get("Abstract", ""))
+            entry = f"{i+1}. {title} ({year})"
+            if snippet:
+                entry += f"\n   Abstract snippet: {snippet}"
+            entries.append(entry)
+        top_papers_info = "\n".join(entries)
 
         logger.info("-----------Filtered %d papers", self.get_paper_count())
 

@@ -7,7 +7,6 @@ Utils for Streamlit.
 import datetime
 import os
 import pickle
-import sys
 import tempfile
 
 import gravis
@@ -28,13 +27,6 @@ from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langsmith import Client
-
-sys.path.append("./")
-import aiagents4pharma.talk2scholars.tools.pdf.question_and_answer as qa_module
-from aiagents4pharma.talk2scholars.tools.pdf.question_and_answer import Vectorstore
-from aiagents4pharma.talk2scholars.tools.zotero.utils.read_helper import (
-    ZoteroSearchData,
-)
 
 
 def submit_feedback(user_response):
@@ -219,49 +211,14 @@ def sample_questions_t2s():
     Function to get the sample questions for Talk2Scholars.
     """
     questions = [
-        "Search articles on 'Role of DNA damage response (DDR) in Cancer'",
+        "Find articles on 'Bridging Biomedical Foundation Models via Knowledge Graphs'.",
         "Tell me more about the first article in the last search results",
         "Save these articles in my Zotero library under the collection 'Curiosity'",
-        "Download the article 'BioBridge' with arxiv_id '2310.03320' and summarize it",
+        "Download the last displayed articles and summarize the pre-trained foundation models used in the articles.",
         "Show all the papers in my Zotero library.",
         "Describe the PDB IDs of the GPCR 3D structures used in all the PDFs, and explain how the embeddings of the GPCR sequences were generated.",
     ]
     return questions
-
-
-def initialize_zotero_and_build_store():
-    """
-    Download all PDFs from the user's Zotero library and build a RAG vector store.
-    """
-    # Retrieve the agent app from session state
-    app = st.session_state.app
-    # Fetch Zotero items and download PDFs
-    search_data = ZoteroSearchData(
-        query="",
-        only_articles=True,
-        limit=1,
-        tool_call_id="startup",
-        download_pdfs=True,
-    )
-    search_data.process_search()
-    results = search_data.get_search_results()
-    # Save article metadata and PDF paths
-    st.session_state.article_data = results.get("article_data", {})
-    # Update agent state with article data
-    config = {"configurable": {"thread_id": st.session_state.unique_id}}
-    app.update_state(config, {"article_data": st.session_state.article_data})
-    # Build RAG vector store
-    embedding_model = get_text_embedding_model(st.session_state.text_embedding_model)
-    vector_store = Vectorstore(embedding_model=embedding_model)
-    for paper_id, meta in st.session_state.article_data.items():
-        pdf_url = meta.get("pdf_url")
-        if pdf_url:
-            vector_store.add_paper(paper_id, pdf_url, meta)
-    vector_store.build_vector_store()
-    # Expose the vector store for use by the Q&A tool
-    qa_module.prebuilt_vector_store = vector_store
-    # Mark as initialized to prevent rerunning
-    st.session_state.zotero_initialized = True
 
 
 def sample_questions_t2aa4p():
@@ -735,7 +692,11 @@ def get_response(agent, graphs_visuals, app, st, prompt):
             columns_to_drop = [
                 "Abstract",
                 "Key",
+                "paper_ids",
                 "arxiv_id",
+                "pm_id",
+                "pmc_id",
+                "doi",
                 "semantic_scholar_paper_id",
                 "source",
                 "filename",
