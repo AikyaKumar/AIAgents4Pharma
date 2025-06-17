@@ -254,9 +254,10 @@ git push origin feat/your-feature-name
 
 #### Contacts for contributions
 
-- **Talk2Biomodels / Talk2Cells**: [@gurdeep330](https://github.com/gurdeep330), [@lilijap](https://github.com/lilijap), [@dmccloskey](https://github.com/dmccloskey)
-- **Talk2KnowledgeGraphs**: [@awmulyadi](https://github.com/awmulyadi), [@dmccloskey](https://github.com/dmccloskey)
-- **Talk2Scholars**: [@ansh-info](https://github.com/ansh-info), [@gurdeep330](https://github.com/gurdeep330), [@dmccloskey](https://github.com/dmccloskey)
+- **Talk2Biomodels**: [@lilijap](https://github.com/lilijap), [@gurdeep330](https://github.com/gurdeep330)
+- **Talk2Cells**: [@gurdeep330](https://github.com/gurdeep330)
+- **Talk2KnowledgeGraphs**: [@awmulyadi](https://github.com/awmulyadi)
+- **Talk2Scholars**: [@ansh-info](https://github.com/ansh-info), [@gurdeep330](https://github.com/gurdeep330)
 
 Please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) for more detailed contribution guidelines.
 
